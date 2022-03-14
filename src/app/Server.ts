@@ -58,6 +58,6 @@ export class Server {
       })
     }
 
-    this.clients[address]!.onMessage(msg)
+    this.clients[address]!.onMessageFromClient(msg)
   }
 }

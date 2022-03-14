@@ -17,6 +17,7 @@ export type ClientOptions = {
 export class Client {
   public readonly ip: string
   public readonly port: number
+  protected readonly socket: Socket
   protected readonly server: Server
   protected readonly connectionRequestProcessor: ConnectionRequestProcessor
 
@@ -26,19 +27,19 @@ export class Client {
     this.server = opts.server
     this.ip = opts.ip
     this.port = opts.port
-
-    console.log(`[Client] constructor`, {
-      ip: this.ip,
-      port: this.port
-    })
-
     this.connectionRequestProcessor = new ConnectionRequestProcessor({
       client: this,
       server: this.server
     })
+
+    this.socket = createSocket('udp4').on('message', this.onMessageFromServer)
   }
 
-  public onMessage(msg: Buffer) {
+  public onMessageFromServer(msg: Buffer) {
+    this.sendToClient(msg)
+  }
+
+  public onMessageFromClient(msg: Buffer) {
     const packet = NetPacketPool.shared.rent(msg)
 
     if (!packet.verify()) {
@@ -63,29 +64,32 @@ export class Client {
   }
 
   public async sendToServer(msg: Buffer) {
-    await this.send(msg, config.targetHost, config.targetPort)
+    return new Promise((resolve, reject) => {
+      this.socket.send(
+        msg,
+        config.targetPort,
+        config.targetHost,
+        (error, bytes) => {
+          if (error) {
+            reject(error)
+            return
+          }
+
+          resolve(bytes)
+        }
+      )
+    })
   }
 
   public async sendToClient(msg: Buffer) {
-    await this.send(msg, this.ip, this.port)
-  }
-
-  private async send(msg: Buffer, ip: string, port: number) {
     return new Promise((resolve, reject) => {
-      this.server.socket.send(msg, 0, msg.length, port, ip, (error, bytes) => {
-        if (!error) {
-          resolve(bytes)
+      this.server.socket.send(msg, this.port, this.ip, (error, bytes) => {
+        if (error) {
+          reject(error)
           return
         }
 
-        reject(error)
-        console.log(`[Client] send: error`, {
-          ip,
-          port,
-          msg,
-          bytes,
-          error
-        })
+        resolve(bytes)
       })
     })
   }
