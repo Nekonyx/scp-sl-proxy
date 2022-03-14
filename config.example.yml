@@ -1,0 +1,7 @@
+# Host/port on which the proxy is running.
+host: 0.0.0.0
+port: 7777
+
+# Host/port of the server to be proxied
+serverHost: 127.0.0.1
+targetPort: 17777

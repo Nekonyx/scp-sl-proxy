@@ -1,6 +1,14 @@
-export const config = {
-  host: '127.0.0.1',
-  port: 8888,
-  targetHost: '127.0.0.1',
-  targetPort: 7777
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { parse } from 'yaml'
+
+interface IConfig {
+  host: string
+  port: number
+  serverHost: string
+  serverPort: number
 }
+
+export const config: IConfig = parse(
+  readFileSync(resolve(process.cwd(), 'config.yml'), 'utf8')
+)

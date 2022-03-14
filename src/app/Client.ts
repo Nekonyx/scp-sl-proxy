@@ -67,8 +67,8 @@ export class Client {
     return new Promise((resolve, reject) => {
       this.socket.send(
         msg,
-        config.targetPort,
-        config.targetHost,
+        config.serverPort,
+        config.serverHost,
         (error, bytes) => {
           if (error) {
             reject(error)
