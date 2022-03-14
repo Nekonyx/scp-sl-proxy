@@ -5,6 +5,7 @@ import { parse } from 'yaml'
 interface IConfig {
   host: string
   port: number
+  maxIdleTime: number
   serverHost: string
   serverPort: number
 }

@@ -17,7 +17,7 @@ export type ClientOptions = {
 export class Client {
   public readonly ip: string
   public readonly port: number
-  public lastSeenAt = new Date()
+  public lastPingAt = 0
 
   protected readonly server: Server
   protected readonly socket: Socket
@@ -48,8 +48,6 @@ export class Client {
   }
 
   public async onMessageFromClient(message: Buffer): Promise<any> {
-    this.lastSeenAt = new Date()
-
     const packet = NetPacketPool.shared.rent(message)
 
     try {
@@ -63,6 +61,10 @@ export class Client {
         }
 
         default: {
+          if (packet.property === PacketProperty.Ping) {
+            this.lastPingAt = Date.now()
+          }
+
           return this.sendToServer(message)
         }
       }

@@ -31,11 +31,12 @@ export class Server {
   }
 
   private cleanup() {
-    const now = new Date()
-    const maxIdleTime = 60 * 1000
+    const now = Date.now()
 
     for (const client of Object.values(this.clients)) {
-      if (client.lastSeenAt.getTime() + maxIdleTime >= now.getTime()) {
+      if (client.lastPingAt + config.maxIdleTime < now) {
+        console.log(`[server] killing ${client.address}`)
+
         delete this.clients[client.address]
       }
     }
