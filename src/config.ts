@@ -6,6 +6,7 @@ interface IConfig {
   host: string
   port: number
   maxIdleTime: number
+  useChallenge: boolean
   serverHost: string
   serverPort: number
 }

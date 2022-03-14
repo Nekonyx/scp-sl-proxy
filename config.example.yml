@@ -5,6 +5,9 @@ port: 7777
 # Maximum time of client inactivity in milliseconds
 maxIdleTime: 30000
 
+# Verify client
+useChallenge: true
+
 # Host/port of the server to be proxied
 serverHost: 127.0.0.1
 serverPort: 17777

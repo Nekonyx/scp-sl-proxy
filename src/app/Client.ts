@@ -56,9 +56,9 @@ export class Client {
       }
 
       switch (packet.property) {
-        case PacketProperty.ConnectRequest: {
-          return this.connectionRequestProcessor.process(message, packet)
-        }
+        // case PacketProperty.ConnectRequest: {
+        //   return this.connectionRequestProcessor.process(message, packet)
+        // }
 
         default: {
           if (packet.property === PacketProperty.Ping) {
