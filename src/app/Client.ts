@@ -17,7 +17,7 @@ export type ClientOptions = {
 export class Client {
   public readonly ip: string
   public readonly port: number
-  public lastPingAt = 0
+  public lastPingAt = Date.now()
 
   protected readonly server: Server
   protected readonly socket: Socket
