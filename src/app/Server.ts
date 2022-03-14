@@ -10,6 +10,7 @@ export class Server {
 
   public constructor() {
     autoBind(this)
+    setInterval(this.cleanup, 1000)
 
     this.socket = createSocket('udp4')
       .on('error', this.onError)
@@ -27,6 +28,17 @@ export class Server {
         resolve(undefined)
       })
     })
+  }
+
+  private cleanup() {
+    const now = new Date()
+    const maxIdleTime = 60 * 1000
+
+    for (const client of Object.values(this.clients)) {
+      if (client.lastSeenAt.getTime() + maxIdleTime >= now.getTime()) {
+        delete this.clients[client.address]
+      }
+    }
   }
 
   private onError(error: Error) {
