@@ -17,53 +17,58 @@ export type ClientOptions = {
 export class Client {
   public readonly ip: string
   public readonly port: number
-  protected readonly socket: Socket
+
   protected readonly server: Server
+  protected readonly socket: Socket
   protected readonly connectionRequestProcessor: ConnectionRequestProcessor
+
+  public get address() {
+    return `${this.ip}:${this.port}`
+  }
 
   public constructor(opts: ClientOptions) {
     autoBind(this)
 
-    this.server = opts.server
     this.ip = opts.ip
     this.port = opts.port
+    this.server = opts.server
+    this.socket = createSocket('udp4')
+      .on('error', this.onError)
+      .on('message', this.onMessageFromServer)
+
     this.connectionRequestProcessor = new ConnectionRequestProcessor({
       client: this,
       server: this.server
     })
-
-    this.socket = createSocket('udp4').on('message', this.onMessageFromServer)
   }
 
-  public onMessageFromServer(msg: Buffer) {
-    this.sendToClient(msg)
+  public async onMessageFromServer(message: Buffer) {
+    await this.sendToClient(message)
   }
 
-  public onMessageFromClient(msg: Buffer) {
-    const packet = NetPacketPool.shared.rent(msg)
+  public async onMessageFromClient(message: Buffer): Promise<any> {
+    const packet = NetPacketPool.shared.rent(message)
 
-    if (!packet.verify()) {
-      console.warn('[Client] onMessage: invalid packet', {
-        packet
-      })
-
-      return
-    }
-
-    switch (packet.property) {
-      case PacketProperty.ConnectRequest: {
-        this.connectionRequestProcessor.process(msg, packet)
-        break
+    try {
+      if (!packet.verify()) {
+        return
       }
 
-      default: {
-        this.sendToServer(msg)
-        break
+      switch (packet.property) {
+        case PacketProperty.ConnectRequest: {
+          return this.connectionRequestProcessor.process(message, packet)
+        }
+
+        default: {
+          return this.sendToServer(message)
+        }
       }
+    } finally {
+      NetPacketPool.shared.return(packet)
     }
   }
 
-  public async sendToServer(msg: Buffer) {
+  public async sendToServer(msg: Buffer): Promise<number> {
     return new Promise((resolve, reject) => {
       this.socket.send(
         msg,
@@ -72,25 +77,27 @@ export class Client {
         (error, bytes) => {
           if (error) {
             reject(error)
-            return
+          } else {
+            resolve(bytes)
           }
-
-          resolve(bytes)
         }
       )
     })
   }
 
-  public async sendToClient(msg: Buffer) {
+  public async sendToClient(msg: Buffer): Promise<number> {
     return new Promise((resolve, reject) => {
       this.server.socket.send(msg, this.port, this.ip, (error, bytes) => {
         if (error) {
           reject(error)
-          return
+        } else {
+          resolve(bytes)
         }
-
-        resolve(bytes)
       })
     })
+  }
+
+  private onError(error: Error) {
+    console.error(`[client] ${this.address} error:`, error)
   }
 }

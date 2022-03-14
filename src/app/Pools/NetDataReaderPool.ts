@@ -20,7 +20,7 @@ export class NetDataReaderPool implements IPool<NetDataReader> {
 
   /**
    * Return a NetDataReader from the pool, or create a new one if the pool is empty.
-   * @param {Buffer} [source] - The source buffer to read from.
+   * @param source - The source buffer to read from.
    * @returns NetDataReader.
    */
   public rent(source?: Buffer): NetDataReader {
@@ -35,7 +35,7 @@ export class NetDataReaderPool implements IPool<NetDataReader> {
 
   /**
    * Return NetDataReader to the pool.
-   * @param {NetDataReader} reader - NetDataReader - The NetDataReader object to return to the pool.
+   * @param reader - NetDataReader - The NetDataReader object to return to the pool.
    */
   public return(reader: NetDataReader): void {
     reader.clear()

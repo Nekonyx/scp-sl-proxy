@@ -12,8 +12,6 @@ export class Server {
     autoBind(this)
 
     this.socket = createSocket('udp4')
-      .on('connect', this.onConnect)
-      .on('close', this.onClose)
       .on('error', this.onError)
       .on('listening', this.onListening)
       .on('message', this.onMessage)
@@ -31,20 +29,12 @@ export class Server {
     })
   }
 
-  private onConnect() {
-    console.log('connected')
-  }
-
-  private onClose() {
-    console.log('closed')
-  }
-
   private onError(error: Error) {
-    console.error('error:', error)
+    console.error('[server] error:', error)
   }
 
   private onListening() {
-    console.log('listening')
+    console.log('[server] listening')
   }
 
   private onMessage(msg: Buffer, rinfo: RemoteInfo) {

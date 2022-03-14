@@ -4,4 +4,4 @@ port: 7777
 
 # Host/port of the server to be proxied
 serverHost: 127.0.0.1
-targetPort: 17777
+serverPort: 17777

@@ -1,12 +1,15 @@
 import { DataType } from '../Enums/DataType'
 
 /**
- * A helper class that helps read data from a buffer.
+ * LiteNetLib.Utils.NetDataReader
  */
 export class NetDataReader {
+  /**
+   * Empty buffer that is used when clearing a NetDataReader or when instantiating a new one.
+   */
   private static readonly _emptyBuffer = Buffer.alloc(0)
 
-  private _data?: Buffer
+  private _data: Buffer = NetDataReader._emptyBuffer
   private _dataSize = 0
   private _position = 0
 

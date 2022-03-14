@@ -1,7 +1,11 @@
 {
   "private": true,
+  "packageManager": "pnpm@6.31.0",
+  "engines": {
+    "node": "^16.13.2 || ^17"
+  },
   "scripts": {
-    "dev": "tsc-watch --onSuccess \"node build\"",
+    "dev": "tsc-watch -p tsconfig.dev.json --onSuccess \"node --enable-source-maps build\"",
     "build": "tsc"
   },
   "dependencies": {

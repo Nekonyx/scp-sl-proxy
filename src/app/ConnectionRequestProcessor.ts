@@ -1,8 +1,6 @@
 import * as autoBind from 'auto-bind'
 
-import { config } from '../config'
 import { Client } from './Client'
-import { ConnectionRequestResult } from './Enums/ConnectionRequestResult'
 import { PacketProperty } from './Enums/PacketProperty'
 import { RejectionReason } from './Enums/RejectionReason'
 import { NetDataReaderPool } from './Pools/NetDataReaderPool'
@@ -27,29 +25,28 @@ export class ConnectionRequestProcessor {
     this.server = opts.server
   }
 
-  public process(msg: Buffer, packet: NetPacket) {
+  public async process(message: Buffer, packet: NetPacket) {
     const reader = this.getReader(packet)
 
     if (!reader) {
-      console.warn(`[ConnectionRequestProcessor] can't get reader`, {
-        packet
-      })
-
       return
     }
 
-    const b = reader.getByte()
+    try {
+      const b = reader.getByte()
 
-    if (b === null || b >= 2) {
-      return this.reject(packet, RejectionReason.InvalidToken)
+      if (b === null || b >= 2) {
+        return this.reject(packet, RejectionReason.InvalidToken)
+      }
+
+      if (b === 1) {
+        return this.accept(message)
+      }
+    } finally {
+      NetDataReaderPool.shared.return(reader)
     }
 
-    if (b === 1) {
-      return this.accept(msg)
-    }
-
-    return this.accept(msg)
-    // return this.reject(packet, RejectionReason.ExpiredAuth)
+    return this.accept(message)
   }
 
   private getReader(packet: NetPacket) {
@@ -63,62 +60,37 @@ export class ConnectionRequestProcessor {
       return null
     }
 
-    return NetDataReaderPool.shared.rent(
-      packet.data.slice(14 + addrSize, packet.dataSize)
-    )
+    return addrSize !== 16 && addrSize !== 28
+      ? null
+      : NetDataReaderPool.shared.rent(
+          packet.data.slice(14 + addrSize, packet.dataSize)
+        )
   }
 
   private async accept(msg: Buffer) {
+    // prettier-ignore
+    console.log(`[server] ${this.client.address} connection request is accepted`)
+
     await this.client.sendToServer(msg)
   }
 
   private async reject(request: NetPacket, reason: RejectionReason) {
-    // const property = PacketProperty.Disconnect
+    // prettier-ignore
+    console.log(`[server] ${this.client.address} connection request is rejected: ${reason}`)
+
     const data = Buffer.from([reason])
-
-    const response = NetPacketPool.shared.rent(
-      // Buffer.alloc(NetPacket.headerSizes[property]!)
-      Buffer.alloc(64)
-    )
-
-    // console.log('just allocated:', response)
+    const response = NetPacketPool.shared.rent(Buffer.alloc(64))
 
     response.property = PacketProperty.Disconnect
-
-    // console.log('property set:', response)
-
     response.connectionNumber = request.connectionNumber
 
     FastBitConverter.GetBytes(response.data!, 1, request.connectionTime)
-
-    // console.log('connection number set:', response)
 
     data.copy(response.data!, 9, 0, data.length)
 
     response.setSource(response.data!.slice(0, response.data!.indexOf(0x00)))
 
-    // console.log('data copied:', data)
-
     await this.client.sendToClient(response.data!)
     NetPacketPool.shared.return(response)
-
-    // this.server.socket.send(
-    //   response.data!,
-    //   0,
-    //   response.dataSize,
-    //   this.client.port,
-    //   this.client.ip,
-    //   (error, bytes) => {
-    //     console.log({
-    //       error,
-    //       bytes,
-    //       data,
-    //       response,
-    //       responseData: response.data?.toString('hex')
-    //     })
-
-    //     NetPacketPool.shared.return(response)
-    //   }
-    // )
   }
 }
