@@ -1,4 +1,4 @@
-import * as autoBind from 'auto-bind'
+import autoBind from 'auto-bind'
 import { $enum } from 'ts-enum-util'
 
 import { PacketProperty } from '../Enums/PacketProperty'

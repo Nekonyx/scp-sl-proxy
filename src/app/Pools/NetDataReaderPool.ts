@@ -1,4 +1,4 @@
-import * as autoBind from 'auto-bind'
+import autoBind from 'auto-bind'
 
 import { IPool } from '../Interfaces/IPool'
 import { NetDataReader } from '../Utils/NetDataReader'

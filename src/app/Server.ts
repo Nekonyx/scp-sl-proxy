@@ -1,4 +1,4 @@
-import * as autoBind from 'auto-bind'
+import autoBind from 'auto-bind'
 import { createSocket, RemoteInfo, Socket } from 'dgram'
 
 import { config } from '../config'

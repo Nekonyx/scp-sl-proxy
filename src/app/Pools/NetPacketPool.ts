@@ -1,4 +1,4 @@
-import * as autoBind from 'auto-bind'
+import autoBind from 'auto-bind'
 
 import { IPool } from '../Interfaces/IPool'
 import { NetPacket } from '../Utils/NetPacket'

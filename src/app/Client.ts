@@ -1,4 +1,4 @@
-import * as autoBind from 'auto-bind'
+import autoBind from 'auto-bind'
 import { createSocket, Socket } from 'dgram'
 
 import { config } from '../config'
@@ -56,9 +56,9 @@ export class Client {
       }
 
       switch (packet.property) {
-        // case PacketProperty.ConnectRequest: {
-        //   return this.connectionRequestProcessor.process(message, packet)
-        // }
+        case PacketProperty.ConnectRequest: {
+          return this.connectionRequestProcessor.process(message, packet)
+        }
 
         default: {
           if (packet.property === PacketProperty.Ping) {
